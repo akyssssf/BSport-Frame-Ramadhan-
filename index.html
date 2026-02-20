@@ -23,7 +23,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Menggunakan 100dvh agar presisi dengan layar HP modern */
             min-height: 100dvh; 
             background-image: radial-gradient(circle at 50% 0%, rgba(251, 191, 36, 0.1) 0%, transparent 50%), linear-gradient(135deg, var(--ramadan-dark-green) 0%, #06392e 100%);
         }
@@ -81,7 +80,6 @@
         .canvas-container canvas { width: 100% !important; height: 100% !important; }
         #ghost-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; opacity: 0.7; z-index: 10; display: none; }
         
-        /* KUNCI PERBAIKAN: Tombol selalu menempel di bawah (Sticky) */
         .bottom-bar {
             padding: 20px;
             background: rgba(2, 44, 34, 0.95);
@@ -93,7 +91,7 @@
             bottom: 0;
             z-index: 100;
             backdrop-filter: blur(10px);
-            padding-bottom: calc(20px + env(safe-area-inset-bottom)); /* Dukungan batas bawah iPhone */
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
         }
 
         .btn {
@@ -126,11 +124,11 @@
 <div class="app-container">
     <div class="header">
         <h2>BSport Ramadan Edition</h2>
-        <p>Frame IGS BSport</p>
+        <p>Gunakan 2 jari untuk cubit (zoom) & geser posisi</p>
     </div>
 
     <div class="editor-area">
-        <div class="canvas-wrapper">
+        <div class="canvas-wrapper" id="canvas-area">
             <canvas id="c"></canvas>
             <img id="ghost-frame" src="frame.png" alt="Frame Ramadan">
         </div>
@@ -149,7 +147,6 @@
         document.getElementById('error-overlay').style.display = 'flex';
     }
 
-    // Tambahan allowTouchScrolling agar area di luar objek tetap bisa di-scroll
     const canvas = new fabric.Canvas('c', { 
         width: 1080, 
         height: 1920, 
@@ -162,6 +159,54 @@
 
     ghostFrame.onload = () => { ghostFrame.style.display = 'block'; };
     ghostFrame.onerror = () => { alert('ERROR: File "frame.png" tidak ditemukan!'); };
+
+    // --- FITUR CUBIT (PINCH TO ZOOM) MULTI-TOUCH ---
+    const canvasArea = document.getElementById('canvas-area');
+    let pinchStartDistance = 0;
+    let initialObjectScale = 1;
+
+    canvasArea.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            const obj = canvas.getActiveObject();
+            if (!obj) return;
+            
+            // Hitung jarak awal antara 2 jari (Pythagoras)
+            pinchStartDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            initialObjectScale = obj.scaleX;
+        }
+    }, { passive: false });
+
+    canvasArea.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 2) {
+            e.preventDefault(); // Mencegah layar HP ketarik (scroll) saat mencubit
+            const obj = canvas.getActiveObject();
+            if (!obj || pinchStartDistance === 0) return;
+
+            // Hitung jarak jari sekarang
+            const currentDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            
+            // Terapkan rasio zoom ke foto
+            const scaleMultiplier = currentDistance / pinchStartDistance;
+            let newScale = initialObjectScale * scaleMultiplier;
+            
+            obj.scale(newScale);
+            canvas.renderAll();
+        }
+    }, { passive: false });
+
+    canvasArea.addEventListener('touchend', function(e) {
+        if (e.touches.length < 2) {
+            pinchStartDistance = 0; // Reset jika jari diangkat
+        }
+    });
+    // --- AKHIR FITUR CUBIT ---
+
 
     document.getElementById('photoUpload').addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -180,7 +225,7 @@
                     originX: 'center',
                     originY: 'center',
                     borderColor: '#fbbf24', cornerColor: '#ffffff', cornerStrokeColor: '#fbbf24',
-                    cornerSize: 55, transparentCorners: false, cornerStyle: 'circle', rotatingPointOffset: 70
+                    cornerSize: 45, transparentCorners: false, cornerStyle: 'circle', rotatingPointOffset: 70
                 });
 
                 img.setControlsVisibility({ mt: false, mb: false, ml: false, mr: false }); 
@@ -220,7 +265,7 @@
                     try {
                         const dataURL = finalCanvas.toDataURL('image/jpeg', 0.95);
                         const link = document.createElement('a');
-                        link.download = 'BsportRamadan_' + Date.now() + '.jpg';
+                        link.download = 'BSport_' + Date.now() + '.jpg';
                         link.href = dataURL;
                         document.body.appendChild(link);
                         link.click();

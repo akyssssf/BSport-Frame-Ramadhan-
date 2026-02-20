@@ -3,76 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ramadan Story BSport</title>
+    <title>Ramadan Story Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <style>
         /* --- TEMA RAMADAN --- */
         :root {
-            --ramadan-dark-green: #022c22; /* Hijau botol sangat tua */
-            --ramadan-green: #064e3b;      /* Hijau zamrud */
-            --ramadan-gold: #fbbf24;       /* Kuning emas */
-            --ramadan-gold-dark: #d97706;  /* Emas tua untuk border/hover */
-            --ramadan-cream: #fef3c7;      /* Warna teks terang */
+            --ramadan-dark-green: #022c22;
+            --ramadan-green: #064e3b;
+            --ramadan-gold: #fbbf24;
+            --ramadan-gold-dark: #d97706;
+            --ramadan-cream: #fef3c7;
         }
 
         body {
             margin: 0;
-            /* Latar belakang gradasi hijau tua dengan sentuhan emas */
             background: linear-gradient(135deg, var(--ramadan-dark-green) 0%, #06392e 100%);
             color: var(--ramadan-cream);
             font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            /* Pola halus (opsional, menambah kesan premium) */
+            /* Menggunakan 100dvh agar presisi dengan layar HP modern */
+            min-height: 100dvh; 
             background-image: radial-gradient(circle at 50% 0%, rgba(251, 191, 36, 0.1) 0%, transparent 50%), linear-gradient(135deg, var(--ramadan-dark-green) 0%, #06392e 100%);
         }
 
         .app-container {
             width: 100%;
             max-width: 420px;
-            background: rgba(6, 78, 59, 0.8); /* Hijau transparan */
-            backdrop-filter: blur(10px); /* Efek kaca buram modern */
-            min-height: 100vh;
+            background: rgba(6, 78, 59, 0.8);
+            backdrop-filter: blur(10px);
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
             position: relative;
             box-shadow: 0 0 30px rgba(0,0,0,0.7);
-            border-left: 1px solid rgba(251, 191, 36, 0.2);
-            border-right: 1px solid rgba(251, 191, 36, 0.2);
         }
 
         .header {
-            padding: 25px 20px;
+            padding: 20px;
             text-align: center;
             background: rgba(2, 44, 34, 0.6);
             border-bottom: 2px solid var(--ramadan-gold-dark);
             position: relative;
+            z-index: 5;
         }
         
-        /* Hiasan Judul */
         .header h2 {
-            margin: 0;
-            font-size: 22px;
-            color: var(--ramadan-gold);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            margin: 0; font-size: 20px; color: var(--ramadan-gold); text-transform: uppercase;
+            letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); display: flex;
+            align-items: center; justify-content: center; gap: 8px;
         }
-        .header h2::before { content: '🌙'; font-size: 28px; } /* Ikon Bulan Sabit */
-        .header h2::after { content: '✨'; font-size: 24px; } /* Ikon Bintang */
-
-        .header p {
-            margin: 8px 0 0 0;
-            font-size: 13px;
-            color: var(--ramadan-cream);
-            opacity: 0.8;
-        }
+        .header h2::before { content: '🌙'; font-size: 24px; }
+        .header h2::after { content: '✨'; font-size: 20px; }
+        .header p { margin: 8px 0 0 0; font-size: 13px; color: var(--ramadan-cream); opacity: 0.8; }
 
         .editor-area {
             flex: 1;
@@ -80,69 +64,52 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            /* Pattern samar Islami di area editor */
             background-color: rgba(0,0,0,0.2);
             background-image: repeating-linear-gradient(45deg, rgba(251, 191, 36, 0.05) 0px, rgba(251, 191, 36, 0.05) 2px, transparent 2px, transparent 10px);
         }
         
-        /* Area Workspace */
         .canvas-wrapper {
             width: 100%;
             aspect-ratio: 9/16;
             position: relative;
-            border-radius: 16px; /* Sudut lebih bulat */
+            border-radius: 12px;
             overflow: hidden;
             background: #000;
-            /* Glow emas di sekeliling canvas */
             box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 0 2px var(--ramadan-gold-dark);
         }
         .canvas-container { width: 100% !important; height: 100% !important; }
         .canvas-container canvas { width: 100% !important; height: 100% !important; }
-        
         #ghost-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; opacity: 0.7; z-index: 10; display: none; }
         
+        /* KUNCI PERBAIKAN: Tombol selalu menempel di bawah (Sticky) */
         .bottom-bar {
-            padding: 25px 20px;
-            background: rgba(2, 44, 34, 0.9);
+            padding: 20px;
+            background: rgba(2, 44, 34, 0.95);
             border-top: 2px solid var(--ramadan-gold-dark);
             display: flex;
             gap: 15px;
             flex-direction: column;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            padding-bottom: calc(20px + env(safe-area-inset-bottom)); /* Dukungan batas bawah iPhone */
         }
 
-        /* Tombol Bertema Emas */
         .btn {
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid var(--ramadan-gold-dark);
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            transition: 0.3s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            padding: 16px; border-radius: 12px; border: 1px solid var(--ramadan-gold-dark);
+            font-size: 16px; font-weight: bold; cursor: pointer; text-align: center;
+            transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px;
+            text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
-        /* Tombol Utama (Upload & Download pakai style emas yang sama biar elegan) */
         .btn-gold {
             background: linear-gradient(to bottom, var(--ramadan-gold), var(--ramadan-gold-dark));
-            color: #451a03; /* Warna teks coklat tua agar kontras dengan emas */
-            text-shadow: 0 1px 1px rgba(255,255,255,0.4);
+            color: #451a03; text-shadow: 0 1px 1px rgba(255,255,255,0.4);
         }
-        .btn-gold:active {
-            background: linear-gradient(to bottom, var(--ramadan-gold-dark), #92400e);
-            transform: translateY(2px); /* Efek ditekan */
-        }
-        #downloadBtn { display: none; } /* Hidden by default */
-        
+        .btn-gold:active { background: linear-gradient(to bottom, var(--ramadan-gold-dark), #92400e); transform: translateY(2px); }
+        #downloadBtn { display: none; } 
         input[type="file"] { display: none; }
         
-        /* Peringatan CORS */
         #error-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(127, 29, 29, 0.98); z-index: 999; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; color: #fff; }
         #error-overlay h1 { font-size: 26px; margin-bottom: 15px; color: var(--ramadan-gold); }
         #error-overlay p { font-size: 16px; line-height: 1.6; }
@@ -153,13 +120,13 @@
 <div id="error-overlay">
     <h1>⚠️ Akses Diblokir Browser</h1>
     <p>Anda membuka web ini secara lokal (<b>file:///</b>). Browser memblokir fitur penggabungan gambar.</p>
-    <p><b>Solusi:</b> Mohon buka menggunakan <b>Live Server</b> (VS Code) atau deploy ke <b>Vercel / Netlify</b>.</p>
+    <p><b>Solusi:</b> Mohon buka menggunakan <b>Live Server</b> atau deploy ke web hosting.</p>
 </div>
 
 <div class="app-container">
     <div class="header">
-        <h2> BSport Ramadan Edition</h2>
-        <p>Upload Foto ➔ Sesuaikan di Frame ➔ Simpan</p>
+        <h2>BSport Ramadan Edition</h2>
+        <p>Frame IGS BSport</p>
     </div>
 
     <div class="editor-area">
@@ -178,21 +145,24 @@
 </div>
 
 <script>
-    // --- JAVASCRIPT LOGIC (Tidak ada perubahan fungsional dari versi sebelumnya) ---
-
     if (window.location.protocol === 'file:') {
         document.getElementById('error-overlay').style.display = 'flex';
     }
 
-    const canvas = new fabric.Canvas('c', { width: 1080, height: 1920, selection: false });
+    // Tambahan allowTouchScrolling agar area di luar objek tetap bisa di-scroll
+    const canvas = new fabric.Canvas('c', { 
+        width: 1080, 
+        height: 1920, 
+        selection: false,
+        allowTouchScrolling: true 
+    });
+    
     const ghostFrame = document.getElementById('ghost-frame');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    // Cek frame.png
     ghostFrame.onload = () => { ghostFrame.style.display = 'block'; };
-    ghostFrame.onerror = () => { alert('ERROR: File "frame.png" tidak ditemukan! Pastikan file frame ada di folder yang sama.'); };
+    ghostFrame.onerror = () => { alert('ERROR: File "frame.png" tidak ditemukan!'); };
 
-    // Upload Foto
     document.getElementById('photoUpload').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -202,7 +172,6 @@
             fabric.Image.fromURL(event.target.result, function(img) {
                 canvas.clear(); 
                 
-                // Auto-Cover Scale
                 const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
                 
                 img.scale(scale).set({
@@ -210,7 +179,6 @@
                     top: canvas.height / 2,
                     originX: 'center',
                     originY: 'center',
-                    // Kontrol UI disesuaikan warnanya dengan tema emas
                     borderColor: '#fbbf24', cornerColor: '#ffffff', cornerStrokeColor: '#fbbf24',
                     cornerSize: 55, transparentCorners: false, cornerStyle: 'circle', rotatingPointOffset: 70
                 });
@@ -226,7 +194,6 @@
         e.target.value = ''; 
     });
 
-    // Download Logic
     downloadBtn.addEventListener('click', function() {
         const originalText = downloadBtn.innerHTML;
         downloadBtn.innerHTML = "⏳ Sedang Memproses...";
@@ -253,13 +220,13 @@
                     try {
                         const dataURL = finalCanvas.toDataURL('image/jpeg', 0.95);
                         const link = document.createElement('a');
-                        link.download = 'RamadanStory_' + Date.now() + '.jpg';
+                        link.download = 'BsportRamadan_' + Date.now() + '.jpg';
                         link.href = dataURL;
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
                     } catch (e) {
-                        alert("Gagal Unduh! Isu browser keamanan. Pastikan deploy ke server (Vercel/Netlify).");
+                        alert("Gagal Unduh! Isu browser keamanan. Pastikan deploy ke server.");
                     }
 
                     downloadBtn.innerHTML = originalText;
